@@ -6,20 +6,22 @@ export class AsyncRequestQueue {
     index: number;
   }[];
   #currentTask: number;
+  #currentIndex: number;
   retries: number;
   maxConcurrent: number;
 
   constructor({ maxConcurrent = 3, retries = 3 }) {
     this.#queue = [];
+    this.#currentIndex = 0;
     this.#currentTask = 0;
     this.maxConcurrent = maxConcurrent;
     this.retries = retries;
   }
 
-  async enqueue(promiseFactory: () => Promise<unknown>, index: number) {
+  async enqueue(promiseFactory: () => Promise<unknown>) {
     this.#queue.push({
       task: promiseFactory,
-      index,
+      index: this.#currentIndex++,
     });
     await this.#executeNext();
   }
@@ -81,25 +83,25 @@ const queue = new AsyncRequestQueue({ maxConcurrent: 3, retries: 3 });
 
 queue.enqueue(async () => {
   return sleep(1000);
-}, 1);
+});
 queue.enqueue(async () => {
   return sleep(10000);
-}, 2);
+});
 queue.enqueue(async () => {
-  return sleep(5000);
-}, 3);
+  return sleep(3000);
+});
 queue.enqueue(async () => {
   return Promise.reject("aa");
-}, 4);
+});
 queue.enqueue(async () => {
   return sleep(1500);
-}, 5);
+});
 queue.enqueue(async () => {
   return sleep(1500);
-}, 6);
+});
 queue.enqueue(async () => {
   return sleep(1500);
-}, 7);
+});
 
 process.on("uncaughtException", function (err: Error) {
   console.log("Caught exception: ", err);
