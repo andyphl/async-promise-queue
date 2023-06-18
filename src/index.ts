@@ -1,5 +1,3 @@
-import process from "process";
-
 type Task<T> = {
   task: () => Promise<T>;
   index: number;
@@ -134,8 +132,4 @@ queue.enqueue(async () => {
 });
 queue.enqueue(async () => {
   return sleep(1500);
-});
-
-process.on("uncaughtException", function (err: Error) {
-  console.log("Caught exception: ", err);
 });
