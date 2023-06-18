@@ -1,10 +1,13 @@
-type Task<T> = {
-  task: () => Promise<T>;
-  index: number;
+type TaskOptions<T> = {
   onSuccess?: (value: T) => void;
   onError?: (err: Error) => void;
   onRetry?: (err: Error) => void;
 };
+
+type Task<T> = {
+  task: () => Promise<T>;
+  index: number;
+} & TaskOptions<T>;
 export class AsyncRequestQueue {
   #queue: Task<any>[];
   #currentTask: number;
@@ -28,11 +31,7 @@ export class AsyncRequestQueue {
 
   async enqueue<T>(
     promiseFactory: () => Promise<T>,
-    {
-      onRetry,
-      onError,
-      onSuccess,
-    }: Pick<Task<T>, "onSuccess" | "onError" | "onRetry"> = {}
+    { onRetry, onError, onSuccess }: TaskOptions<T> = {}
   ) {
     this.#queue.push({
       task: promiseFactory,
